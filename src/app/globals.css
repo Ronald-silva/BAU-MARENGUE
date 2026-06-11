@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-display: 'Oswald', Impact, 'Arial Black', sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #0A0500;
+  color: #FFF8DC;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scrollbar temática */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #150A00; }
+::-webkit-scrollbar-thumb { background: #FFD700; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #FFA500; }
+
+/* Seleção de texto */
+::selection { background: rgba(255, 215, 0, 0.3); color: #FFF8DC; }
+
+/* Botão dourado base */
+.btn-gold {
+  @apply relative overflow-hidden font-display font-bold uppercase tracking-wider;
+  @apply bg-gradient-to-r from-ouro-600 via-ouro-400 to-ouro-600;
+  @apply text-escuro-900 px-6 py-3 rounded-xl;
+  @apply shadow-gold transition-all duration-300;
+  @apply border border-ouro-300/30;
+  background-size: 200% auto;
+}
+.btn-gold:hover {
+  @apply shadow-gold-lg scale-105;
+  background-position: right center;
+}
+.btn-gold:active { @apply scale-95; }
+
+/* Botão vermelho base */
+.btn-red {
+  @apply relative overflow-hidden font-display font-bold uppercase tracking-wider;
+  @apply bg-gradient-to-r from-vermelho-600 via-vermelho-500 to-vermelho-600;
+  @apply text-white px-6 py-3 rounded-xl;
+  @apply shadow-red transition-all duration-300;
+  background-size: 200% auto;
+}
+.btn-red:hover {
+  @apply shadow-red-lg scale-105;
+  background-position: right center;
+}
+
+/* Card base */
+.card-bau {
+  @apply relative overflow-hidden rounded-2xl;
+  @apply bg-gradient-to-br from-escuro-700/80 to-escuro-800/90;
+  @apply border border-ouro-600/20;
+  @apply shadow-card backdrop-blur-sm;
+}
+
+/* Texto com gradiente dourado */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #FFE066 0%, #FFD700 40%, #FFA500 70%, #FF8C00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Raios decorativos de fundo */
+.rays-bg {
+  background-image: repeating-conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(220,20,60,0.15) 0deg 10deg,
+    transparent 10deg 20deg
+  );
+}
+
+/* Glow animado nos elementos em destaque */
+.glow-gold {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* Input estilizado */
+.input-bau {
+  @apply w-full bg-escuro-700/60 border border-ouro-600/30 rounded-xl px-4 py-3;
+  @apply text-creme-100 placeholder-ouro-600/50;
+  @apply focus:outline-none focus:border-ouro-400 focus:ring-2 focus:ring-ouro-400/20;
+  @apply transition-all duration-200;
+}
+
+/* Badge de status */
+.badge-disponivel {
+  @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold;
+  @apply bg-green-900/40 text-green-400 border border-green-500/30;
+}
+.badge-sorteado {
+  @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold;
+  @apply bg-ouro-600/20 text-ouro-400 border border-ouro-500/30;
+}
+
+/* Shimmer effect */
+.shimmer-effect {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,215,0,0.15) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* Partículas de fundo */
+@keyframes particle-rise {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+}
+
+.particle {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50%;
+  animation: particle-rise linear infinite;
+}
+
+/* Transição de página */
+.page-enter {
+  animation: pageEnter 0.4s ease-out forwards;
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
