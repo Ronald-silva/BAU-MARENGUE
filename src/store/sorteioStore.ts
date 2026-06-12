@@ -5,7 +5,8 @@ import { Participante } from './participantesStore';
 export interface RegistroSorteio {
   id: string;
   rodada: number;
-  vencedor: Participante;
+  participante: Participante;
+  sucesso: boolean; // true = vencedor, false = tentou e falhou
   seed: string;
   hash: string;
   dataHora: string;

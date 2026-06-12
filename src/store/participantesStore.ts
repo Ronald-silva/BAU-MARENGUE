@@ -1,22 +1,26 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { deletarFotoParticipante } from '@/lib/imageStorage';
 
 export interface Participante {
   id: string;
   nome: string;
   contato: string;
-  status: 'disponivel' | 'sorteado';
+  status: 'disponivel' | 'tentou' | 'vencedor';
   dataCadastro: string;
-  dataSorteio?: string;
+  dataTentativa?: string;
+  dataVitoria?: string;
+  temFoto?: boolean;
 }
 
 interface ParticipantesState {
   participantes: Participante[];
-  addParticipante: (nome: string, contato: string) => void;
+  addParticipante: (nome: string, contato: string, temFoto?: boolean) => string;
   removeParticipante: (id: string) => void;
-  editarParticipante: (id: string, nome: string, contato: string) => void;
+  editarParticipante: (id: string, nome: string, contato: string, temFoto?: boolean) => void;
   importarParticipantes: (lista: Omit<Participante, 'id' | 'status' | 'dataCadastro'>[]) => void;
-  marcarSorteado: (id: string) => void;
+  marcarTentou: (id: string) => void;
+  marcarVencedor: (id: string) => void;
   resetarTodos: () => void;
   limparTodos: () => void;
 }
@@ -26,29 +30,39 @@ export const useParticipantesStore = create<ParticipantesState>()(
     (set) => ({
       participantes: [],
 
-      addParticipante: (nome, contato) =>
+      addParticipante: (nome, contato, temFoto) => {
+        const novoId = crypto.randomUUID();
         set((state) => ({
           participantes: [
             ...state.participantes,
             {
-              id: crypto.randomUUID(),
+              id: novoId,
               nome: nome.trim(),
               contato: contato.trim(),
               status: 'disponivel',
               dataCadastro: new Date().toISOString(),
+              temFoto,
             },
           ],
-        })),
+        }));
+        return novoId;
+      },
 
       removeParticipante: (id) =>
-        set((state) => ({
-          participantes: state.participantes.filter((p) => p.id !== id),
-        })),
+        set((state) => {
+          const participante = state.participantes.find(p => p.id === id);
+          if (participante?.temFoto) {
+            deletarFotoParticipante(id).catch(console.error);
+          }
+          return { participantes: state.participantes.filter((p) => p.id !== id) };
+        }),
 
-      editarParticipante: (id, nome, contato) =>
+      editarParticipante: (id, nome, contato, temFoto) =>
         set((state) => ({
           participantes: state.participantes.map((p) =>
-            p.id === id ? { ...p, nome: nome.trim(), contato: contato.trim() } : p
+            p.id === id 
+              ? { ...p, nome: nome.trim(), contato: contato.trim(), ...(temFoto !== undefined ? { temFoto } : {}) } 
+              : p
           ),
         })),
 
@@ -64,11 +78,20 @@ export const useParticipantesStore = create<ParticipantesState>()(
           return { participantes: [...state.participantes, ...novos] };
         }),
 
-      marcarSorteado: (id) =>
+      marcarTentou: (id) =>
         set((state) => ({
           participantes: state.participantes.map((p) =>
             p.id === id
-              ? { ...p, status: 'sorteado', dataSorteio: new Date().toISOString() }
+              ? { ...p, status: 'tentou', dataTentativa: new Date().toISOString() }
+              : p
+          ),
+        })),
+
+      marcarVencedor: (id) =>
+        set((state) => ({
+          participantes: state.participantes.map((p) =>
+            p.id === id
+              ? { ...p, status: 'vencedor', dataVitoria: new Date().toISOString() }
               : p
           ),
         })),
@@ -78,11 +101,17 @@ export const useParticipantesStore = create<ParticipantesState>()(
           participantes: state.participantes.map((p) => ({
             ...p,
             status: 'disponivel',
-            dataSorteio: undefined,
+            dataTentativa: undefined,
+            dataVitoria: undefined,
           })),
         })),
 
-      limparTodos: () => set({ participantes: [] }),
+      limparTodos: () => set((state) => {
+        state.participantes.forEach((p) => {
+          if (p.temFoto) deletarFotoParticipante(p.id).catch(console.error);
+        });
+        return { participantes: [] };
+      }),
     }),
     { name: 'bau-merengue-participantes' }
   )

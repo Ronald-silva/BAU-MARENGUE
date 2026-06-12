@@ -1,16 +1,17 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, RotateCcw, Maximize, Minimize, ChevronRight } from 'lucide-react';
+import { Play, RotateCcw, Maximize, Minimize, CheckCircle, XCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useParticipantesStore } from '@/store/participantesStore';
 import { useSorteioStore } from '@/store/sorteioStore';
 import { useConfigStore } from '@/store/configStore';
 import { sortearVencedores, gerarSeedCripto, gerarHash } from '@/lib/fisher-yates';
-import { somEmbaralhando, somRevelacao, somVitoria } from '@/lib/audio';
+import { obterFotoParticipanteUrl } from '@/lib/imageStorage';
+import { somEmbaralhando, somRevelacao, somVitoria, somErro } from '@/lib/audio';
 import Link from 'next/link';
 
-type Estado = 'idle' | 'embaralhando' | 'revelando' | 'vencedor';
+type Estado = 'idle' | 'embaralhando' | 'revelando' | 'tentando' | 'sucesso' | 'falha';
 
 function dispararConfetti() {
   const defaults = { spread: 360, ticks: 100, gravity: 0.5, decay: 0.94, startVelocity: 30 };
@@ -27,16 +28,18 @@ function dispararConfetti() {
 }
 
 export default function SorteioPage() {
-  const { participantes, marcarSorteado } = useParticipantesStore();
-  const { adicionarRegistro, incrementarRodada, rodadaAtual } = useSorteioStore();
-  const { eventoNome, premioDescricao, quantidadeVencedores, somAtivo } = useConfigStore();
-
+  const [mounted, setMounted] = useState(false);
   const [estado, setEstado] = useState<Estado>('idle');
   const [nomeExibido, setNomeExibido] = useState('');
-  const [vencedor, setVencedor] = useState<(typeof participantes)[0] | null>(null);
+  const [selecionado, setSelecionado] = useState<(typeof participantes)[0] | null>(null);
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const stopSoundRef = useRef<(() => void) | null>(null);
+
+  const { participantes, marcarTentou, marcarVencedor } = useParticipantesStore();
+  const { adicionarRegistro, incrementarRodada, rodadaAtual } = useSorteioStore();
+  const { eventoNome, premioDescricao, somAtivo } = useConfigStore();
 
   const disponiveis = participantes.filter((p) => p.status === 'disponivel');
 
@@ -51,16 +54,48 @@ export default function SorteioPage() {
   }, []);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', handler);
     return () => document.removeEventListener('fullscreenchange', handler);
   }, []);
 
-  const iniciarSorteio = useCallback(async () => {
+  // Para o som e revoga a blob URL da foto ao desmontar o componente.
+  useEffect(() => {
+    return () => {
+      if (stopSoundRef.current) stopSoundRef.current();
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (fotoUrl) URL.revokeObjectURL(fotoUrl);
+    };
+  }, [fotoUrl]);
+
+  if (!mounted) {
+    return (
+      <div
+        ref={containerRef}
+        className="page-enter relative min-h-screen flex flex-col items-center justify-center px-4"
+      >
+        <div className="text-center mb-6 relative z-10">
+          <h1 className="font-display font-bold text-xl text-ouro-400 uppercase tracking-widest mb-1">
+            {eventoNome}
+          </h1>
+        </div>
+      </div>
+    );
+  }
+
+  const iniciarSorteio = async () => {
     if (disponiveis.length === 0 || estado !== 'idle') return;
 
     setEstado('embaralhando');
-    setVencedor(null);
+    setSelecionado(null);
 
     // Som de embaralhamento
     if (somAtivo) {
@@ -82,45 +117,90 @@ export default function SorteioPage() {
     };
     loop();
 
-    // Após 4 segundos, revelar
+    // Após 4 segundos, revelar selecionado
     setTimeout(async () => {
       if (stopSoundRef.current) stopSoundRef.current();
       setEstado('revelando');
 
-      // Sortear vencedor de verdade
+      // Sortear pessoa
       const [sorteado] = sortearVencedores(disponiveis, 1);
-      const seed = gerarSeedCripto();
-      const hash = await gerarHash(`${sorteado.id}-${seed}-${Date.now()}`);
-
       setNomeExibido(sorteado.nome);
 
-      setTimeout(async () => {
-        setVencedor(sorteado);
-        setEstado('vencedor');
-        marcarSorteado(sorteado.id);
-        adicionarRegistro({
-          vencedor: sorteado,
-          seed,
-          hash,
-          dataHora: new Date().toISOString(),
-          eventoNome,
-          premioDescricao,
-        });
-        incrementarRodada();
+      // Carregar foto se existir
+      if (sorteado.temFoto) {
+        const url = await obterFotoParticipanteUrl(sorteado.id);
+        setFotoUrl(url);
+      }
 
-        if (somAtivo) {
-          somRevelacao();
-          setTimeout(() => somVitoria(), 500);
-        }
-        setTimeout(dispararConfetti, 300);
-      }, 800);
+      setSelecionado(sorteado);
+      
+      if (somAtivo) {
+        somRevelacao();
+      }
+
+      // Após 1.5s, entrar no estado "tentando abrir o baú"
+      setTimeout(() => {
+        setEstado('tentando');
+      }, 1500);
     }, 4000);
-  }, [disponiveis, estado, somAtivo, marcarSorteado, adicionarRegistro, incrementarRodada, eventoNome, premioDescricao]);
+  };
+
+  const tentarAbrirBau = async (sucesso: boolean) => {
+    if (!selecionado || estado !== 'tentando') return;
+
+    const seed = gerarSeedCripto();
+    const hash = await gerarHash(`${selecionado.id}-${seed}-${Date.now()}-${sucesso}`);
+
+    if (sucesso) {
+      // VENCEDOR!
+      setEstado('sucesso');
+      marcarVencedor(selecionado.id);
+      
+      adicionarRegistro({
+        participante: selecionado,
+        sucesso: true,
+        seed,
+        hash,
+        dataHora: new Date().toISOString(),
+        eventoNome,
+        premioDescricao,
+      });
+      
+      incrementarRodada();
+
+      if (somAtivo) {
+        setTimeout(() => somVitoria(), 300);
+      }
+      setTimeout(dispararConfetti, 400);
+    } else {
+      // NÃO ABRIU
+      setEstado('falha');
+      marcarTentou(selecionado.id);
+      
+      adicionarRegistro({
+        participante: selecionado,
+        sucesso: false,
+        seed,
+        hash,
+        dataHora: new Date().toISOString(),
+        eventoNome,
+        premioDescricao,
+      });
+
+      if (somAtivo) {
+        somErro();
+      }
+    }
+  };
 
   const reiniciar = () => {
     setEstado('idle');
-    setVencedor(null);
+    setSelecionado(null);
     setNomeExibido('');
+    if (fotoUrl) {
+      URL.revokeObjectURL(fotoUrl);
+      setFotoUrl(null);
+    }
     if (stopSoundRef.current) stopSoundRef.current();
   };
 
@@ -159,7 +239,7 @@ export default function SorteioPage() {
       <div className="relative w-full max-w-sm mx-auto mb-6">
         {/* Raios de fundo */}
         <AnimatePresence>
-          {(estado === 'embaralhando' || estado === 'revelando' || estado === 'vencedor') && (
+          {(estado !== 'idle') && (
             <motion.div
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -175,15 +255,19 @@ export default function SorteioPage() {
           className="relative z-10 rounded-3xl overflow-hidden"
           style={{
             background: 'radial-gradient(ellipse at center, #2A1500 0%, #150A00 100%)',
-            border: estado === 'vencedor'
+            border: estado === 'sucesso'
               ? '3px solid #FFD700'
+              : estado === 'falha'
+              ? '2px solid #DC143C'
               : '2px solid rgba(255,215,0,0.2)',
-            boxShadow: estado === 'vencedor'
+            boxShadow: estado === 'sucesso'
               ? '0 0 80px rgba(255,215,0,0.6), 0 0 40px rgba(255,165,0,0.4)'
+              : estado === 'falha'
+              ? '0 0 40px rgba(220,20,60,0.4)'
               : '0 0 30px rgba(255,165,0,0.1)',
             minHeight: '320px',
           }}
-          animate={estado === 'vencedor' ? { scale: [1, 1.02, 1] } : {}}
+          animate={estado === 'sucesso' ? { scale: [1, 1.02, 1] } : {}}
           transition={{ duration: 0.5 }}
         >
           <div className="flex flex-col items-center justify-center p-8 min-h-[320px]">
@@ -234,7 +318,7 @@ export default function SorteioPage() {
                 >
                   🎰
                 </motion.div>
-                <div className="text-ouro-400 text-xs uppercase tracking-widest mb-3">Embaralhando...</div>
+                <div className="text-ouro-400 text-xs uppercase tracking-widest mb-3">Sorteando...</div>
                 <motion.div
                   key={nomeExibido}
                   initial={{ opacity: 0, y: 10 }}
@@ -258,7 +342,7 @@ export default function SorteioPage() {
             )}
 
             {/* Estado: REVELANDO */}
-            {estado === 'revelando' && (
+            {estado === 'revelando' && selecionado && (
               <motion.div
                 key="revelando"
                 initial={{ scale: 0.5, opacity: 0 }}
@@ -266,48 +350,129 @@ export default function SorteioPage() {
                 transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                 className="text-center"
               >
-                <div className="text-5xl mb-3">✨</div>
-                <div className="text-ouro-400 text-xs uppercase tracking-widest mb-3">E o vencedor é...</div>
+                {fotoUrl ? (
+                  <motion.div
+                    animate={{ scale: [0.8, 1], rotate: [0, -5, 5, 0] }}
+                    transition={{ duration: 0.5 }}
+                    className="mb-4 mx-auto w-24 h-24 rounded-full border-4 border-ouro-400 overflow-hidden shadow-[0_0_30px_rgba(255,215,0,0.8)] flex items-center justify-center bg-escuro-900"
+                  >
+                    <img src={fotoUrl} alt={selecionado.nome} className="w-full h-full object-cover" />
+                  </motion.div>
+                ) : (
+                  <div className="text-5xl mb-3">🔑</div>
+                )}
+                <div className="text-ouro-400 text-xs uppercase tracking-widest mb-3">Selecionado!</div>
                 <div
                   className="font-display font-bold text-3xl text-ouro-400"
                   style={{ textShadow: '0 0 30px rgba(255,215,0,0.8)' }}
                 >
-                  {nomeExibido}
+                  {selecionado.nome}
                 </div>
               </motion.div>
             )}
 
-            {/* Estado: VENCEDOR */}
-            {estado === 'vencedor' && vencedor && (
+            {/* Estado: TENTANDO ABRIR O BAÚ */}
+            {estado === 'tentando' && selecionado && (
               <motion.div
-                key="vencedor"
+                key="tentando"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center w-full"
+              >
+                {fotoUrl && (
+                  <div className="mb-3 mx-auto w-20 h-20 rounded-full border-3 border-ouro-400 overflow-hidden shadow-[0_0_20px_rgba(255,215,0,0.6)] flex items-center justify-center bg-escuro-900">
+                    <img src={fotoUrl} alt={selecionado.nome} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="font-bold text-lg text-creme-100 mb-1">{selecionado.nome}</div>
+                <div className="text-ouro-600/70 text-xs mb-4">vai tentar abrir o baú</div>
+                
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1], rotate: [0, -10, 10, 0] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                  className="text-6xl mb-6"
+                >
+                  🗝️
+                </motion.div>
+
+                <div className="text-ouro-500 text-sm uppercase tracking-wider mb-4 font-bold">
+                  A chave abriu o baú?
+                </div>
+
+                <div className="flex gap-3 px-4">
+                  <button
+                    onClick={() => tentarAbrirBau(true)}
+                    className="flex-1 flex flex-col items-center gap-2 py-4 rounded-xl font-bold transition-all duration-200 active:scale-95"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(34,197,94,0.2), rgba(22,163,74,0.15))',
+                      border: '2px solid rgba(34,197,94,0.5)',
+                    }}
+                  >
+                    <CheckCircle size={28} className="text-green-400" />
+                    <span className="text-green-400 text-sm">SIM</span>
+                    <span className="text-green-600/60 text-xs">Vencedor!</span>
+                  </button>
+
+                  <button
+                    onClick={() => tentarAbrirBau(false)}
+                    className="flex-1 flex flex-col items-center gap-2 py-4 rounded-xl font-bold transition-all duration-200 active:scale-95"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(220,20,60,0.2), rgba(185,28,28,0.15))',
+                      border: '2px solid rgba(220,20,60,0.5)',
+                    }}
+                  >
+                    <XCircle size={28} className="text-red-400" />
+                    <span className="text-red-400 text-sm">NÃO</span>
+                    <span className="text-red-600/60 text-xs">Tente outro</span>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Estado: SUCESSO (VENCEDOR) */}
+            {estado === 'sucesso' && selecionado && (
+              <motion.div
+                key="sucesso"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: 'spring', stiffness: 150, damping: 12 }}
                 className="text-center"
               >
-                <motion.div
-                  animate={{ scale: [1, 1.15, 1], rotate: [0, -5, 5, 0] }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="text-7xl mb-3"
-                  style={{ filter: 'drop-shadow(0 0 30px rgba(255,215,0,0.8))' }}
-                >
-                  🏆
-                </motion.div>
+                {fotoUrl ? (
+                  <motion.div
+                    animate={{ scale: [1, 1.05, 1], rotate: [0, -2, 2, 0] }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className="mb-4 mx-auto w-32 h-32 rounded-full border-4 border-ouro-400 overflow-hidden shadow-[0_0_30px_rgba(255,215,0,0.8)] flex items-center justify-center bg-escuro-900"
+                  >
+                    <img src={fotoUrl} alt={selecionado.nome} className="w-full h-full object-cover" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    animate={{ scale: [1, 1.15, 1], rotate: [0, -5, 5, 0] }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className="text-7xl mb-3"
+                    style={{ filter: 'drop-shadow(0 0 30px rgba(255,215,0,0.8))' }}
+                  >
+                    🏆
+                  </motion.div>
+                )}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                 >
-                  <div className="text-ouro-500 text-xs uppercase tracking-widest mb-2">🎉 VENCEDOR!</div>
+                  <div className="text-green-400 text-xs uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                    <CheckCircle size={14} /> ABRIU O BAÚ!
+                  </div>
                   <div
                     className="font-display font-bold text-4xl text-gold-gradient mb-2 leading-tight"
                     style={{ textShadow: 'none', filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.6))' }}
                   >
-                    {vencedor.nome}
+                    {selecionado.nome}
                   </div>
-                  {vencedor.contato && (
-                    <div className="text-ouro-600/70 text-sm mb-2">{vencedor.contato}</div>
+                  <div className="text-ouro-500 text-sm mb-2">🎉 VENCEDOR!</div>
+                  {selecionado.contato && (
+                    <div className="text-ouro-600/70 text-sm mb-2">{selecionado.contato}</div>
                   )}
                   {premioDescricao && (
                     <div
@@ -318,6 +483,34 @@ export default function SorteioPage() {
                     </div>
                   )}
                 </motion.div>
+              </motion.div>
+            )}
+
+            {/* Estado: FALHA (NÃO ABRIU) */}
+            {estado === 'falha' && selecionado && (
+              <motion.div
+                key="falha"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 180, damping: 15 }}
+                className="text-center"
+              >
+                <motion.div
+                  animate={{ rotate: [0, -10, 10, -10, 10, 0] }}
+                  transition={{ duration: 0.5 }}
+                  className="text-6xl mb-3"
+                >
+                  🔒
+                </motion.div>
+                <div className="text-vermelho-400 text-xs uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                  <XCircle size={14} /> Não abriu
+                </div>
+                <div className="font-display font-bold text-2xl text-creme-100 mb-2">
+                  {selecionado.nome}
+                </div>
+                <p className="text-ouro-600/70 text-sm">
+                  Tente outro participante!
+                </p>
               </motion.div>
             )}
           </div>
@@ -331,45 +524,44 @@ export default function SorteioPage() {
 
       {/* Controles */}
       <div className="relative z-10 w-full max-w-sm space-y-3">
-        {(estado === 'idle' || estado === 'vencedor') && (
+        {(estado === 'idle' || estado === 'sucesso' || estado === 'falha') && (
           <motion.button
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            onClick={iniciarSorteio}
-            disabled={semParticipantes}
+            onClick={estado === 'idle' ? iniciarSorteio : reiniciar}
+            disabled={semParticipantes && estado === 'idle'}
             className="w-full relative overflow-hidden rounded-2xl py-5 font-display font-bold text-xl tracking-widest uppercase text-escuro-900 transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              background: semParticipantes
+              background: (semParticipantes && estado === 'idle')
                 ? 'rgba(139,101,20,0.3)'
-                : 'linear-gradient(135deg, #FFE066 0%, #FFD700 30%, #FFA500 60%, #FF8C00 100%)',
-              boxShadow: semParticipantes ? 'none' : '0 0 40px rgba(255,215,0,0.5), 0 8px 30px rgba(255,165,0,0.4)',
+                : estado === 'idle'
+                ? 'linear-gradient(135deg, #FFE066 0%, #FFD700 30%, #FFA500 60%, #FF8C00 100%)'
+                : 'linear-gradient(135deg, #4ADE80, #22C55E)',
+              boxShadow: (semParticipantes && estado === 'idle') 
+                ? 'none' 
+                : estado === 'idle'
+                ? '0 0 40px rgba(255,215,0,0.5), 0 8px 30px rgba(255,165,0,0.4)'
+                : '0 0 30px rgba(34,197,94,0.4)',
               border: '2px solid rgba(255,255,255,0.15)',
             }}
           >
-            {!semParticipantes && (
+            {!(semParticipantes && estado === 'idle') && (
               <div className="absolute inset-0 shimmer-effect pointer-events-none" />
             )}
             <span className="relative z-10 flex items-center justify-center gap-3">
-              <Play size={22} fill="currentColor" />
-              {estado === 'vencedor' ? 'PRÓXIMO SORTEIO' : 'SORTEAR AGORA'}
-              <Play size={22} fill="currentColor" />
+              {estado === 'idle' ? (
+                <>
+                  <Play size={22} fill="currentColor" />
+                  SORTEAR PARTICIPANTE
+                  <Play size={22} fill="currentColor" />
+                </>
+              ) : (
+                <>
+                  <RotateCcw size={20} />
+                  PRÓXIMO SORTEIO
+                </>
+              )}
             </span>
-          </motion.button>
-        )}
-
-        {estado === 'vencedor' && (
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            onClick={reiniciar}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-200 active:scale-95"
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: '#8B6914',
-            }}
-          >
-            <RotateCcw size={15} /> Voltar ao Início
           </motion.button>
         )}
 

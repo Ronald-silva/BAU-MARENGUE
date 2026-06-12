@@ -1,4 +1,5 @@
 'use client';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Trophy, Users, Star, History, ChevronRight, Zap } from 'lucide-react';
@@ -33,15 +34,23 @@ function StatCard({
 }
 
 export default function DashboardPage() {
+  const [mounted, setMounted] = useState(false);
   const { participantes } = useParticipantesStore();
   const { historico } = useSorteioStore();
   const { eventoNome, premioDescricao } = useConfigStore();
 
-  const total = participantes.length;
-  const sorteados = participantes.filter((p) => p.status === 'sorteado').length;
-  const disponiveis = total - sorteados;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  const ultimosSorteios = historico.slice(0, 3);
+  if (!mounted) return null;
+
+  const total = participantes.length;
+  const vencedores = participantes.filter((p) => p.status === 'vencedor').length;
+  const tentaram = participantes.filter((p) => p.status === 'tentou').length;
+  const disponiveis = participantes.filter((p) => p.status === 'disponivel').length;
+
+  const ultimosSorteios = historico.filter((r) => r.sucesso).slice(0, 3);
 
   return (
     <div className="page-enter">
@@ -98,12 +107,13 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Cards de estatística */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <div className="col-span-2 sm:col-span-1">
           <StatCard label="Total" value={total} sub="cadastrados" color="#FFD700" icon={Users} />
         </div>
-        <StatCard label="Disponíveis" value={disponiveis} sub="para sortear" color="#4ADE80" icon={Star} />
-        <StatCard label="Sorteados" value={sorteados} sub="premiados" color="#FFA500" icon={Trophy} />
+        <StatCard label="Disponíveis" value={disponiveis} sub="podem tentar" color="#4ADE80" icon={Star} />
+        <StatCard label="Tentaram" value={tentaram} sub="sem sucesso" color="#FFA500" icon={Users} />
+        <StatCard label="Vencedores" value={vencedores} sub="premiados" color="#DC143C" icon={Trophy} />
       </div>
 
       {/* Botão principal — SORTEAR */}
@@ -198,10 +208,10 @@ export default function DashboardPage() {
                   className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
                   style={{ background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#0A0500' }}
                 >
-                  {registro.vencedor.nome.charAt(0).toUpperCase()}
+                  {registro.participante.nome.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-sm text-creme-100 truncate">{registro.vencedor.nome}</div>
+                  <div className="font-bold text-sm text-creme-100 truncate">{registro.participante.nome}</div>
                   <div className="text-xs text-ouro-600/60">
                     Rodada {registro.rodada} · {new Date(registro.dataHora).toLocaleDateString('pt-BR')}
                   </div>

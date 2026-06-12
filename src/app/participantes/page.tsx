@@ -1,9 +1,10 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UserPlus, Search, Upload, Trash2, Edit3, Check, X, Filter, RefreshCw } from 'lucide-react';
+import { UserPlus, Search, Upload, Trash2, Edit3, Check, X, Filter, RefreshCw, Camera } from 'lucide-react';
 import Papa from 'papaparse';
 import { useParticipantesStore, Participante } from '@/store/participantesStore';
+import { salvarFotoParticipante, obterFotoParticipanteUrl } from '@/lib/imageStorage';
 import { somTick, somErro } from '@/lib/audio';
 import { useConfigStore } from '@/store/configStore';
 
@@ -16,7 +17,8 @@ function ParticipantCard({
   onEdit: (p: Participante) => void;
   onDelete: (id: string) => void;
 }) {
-  const sorteado = participante.status === 'sorteado';
+  const vencedor = participante.status === 'vencedor';
+  const tentou = participante.status === 'tentou';
 
   return (
     <motion.div
@@ -26,31 +28,48 @@ function ParticipantCard({
       exit={{ opacity: 0, x: -30, scale: 0.9 }}
       className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200"
       style={{
-        background: sorteado
-          ? 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,165,0,0.05) 100%)'
+        background: vencedor
+          ? 'linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,165,0,0.08) 100%)'
+          : tentou
+          ? 'rgba(255,165,0,0.05)'
           : 'rgba(255,255,255,0.03)',
-        border: sorteado ? '1px solid rgba(255,215,0,0.25)' : '1px solid rgba(255,255,255,0.06)',
+        border: vencedor 
+          ? '1px solid rgba(255,215,0,0.3)' 
+          : tentou
+          ? '1px solid rgba(255,165,0,0.15)'
+          : '1px solid rgba(255,255,255,0.06)',
       }}
     >
       {/* Avatar */}
       <div
-        className="w-10 h-10 rounded-full flex items-center justify-center font-display font-bold text-lg flex-shrink-0"
+        className="relative w-10 h-10 rounded-full flex items-center justify-center font-display font-bold text-lg flex-shrink-0"
         style={{
-          background: sorteado
+          background: vencedor
             ? 'linear-gradient(135deg, #FFD700, #FFA500)'
+            : tentou
+            ? 'linear-gradient(135deg, #FFA500, #FF8C00)'
             : 'linear-gradient(135deg, #2A1500, #3D2000)',
-          color: sorteado ? '#0A0500' : '#FFA500',
-          border: sorteado ? '2px solid #FFD700' : '2px solid rgba(255,165,0,0.3)',
+          color: vencedor ? '#0A0500' : tentou ? '#0A0500' : '#FFA500',
+          border: vencedor 
+            ? '2px solid #FFD700' 
+            : tentou 
+            ? '2px solid rgba(255,165,0,0.4)' 
+            : '2px solid rgba(255,165,0,0.3)',
         }}
       >
-        {sorteado ? '🏆' : participante.nome.charAt(0).toUpperCase()}
+        {vencedor ? '🏆' : tentou ? '🔑' : participante.nome.charAt(0).toUpperCase()}
+        {participante.temFoto && (
+          <div className="absolute -bottom-1 -right-1 bg-ouro-500 rounded-full p-0.5 border-2 border-escuro-900">
+            <Camera size={10} className="text-escuro-900" />
+          </div>
+        )}
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div
           className="font-bold text-sm truncate"
-          style={{ color: sorteado ? '#FFD700' : '#FFF8DC' }}
+          style={{ color: vencedor ? '#FFD700' : tentou ? '#FFA500' : '#FFF8DC' }}
         >
           {participante.nome}
         </div>
@@ -60,13 +79,13 @@ function ParticipantCard({
       </div>
 
       {/* Badge status */}
-      <span className={sorteado ? 'badge-sorteado' : 'badge-disponivel'}>
-        {sorteado ? '🏆 Sorteado' : '● Disponível'}
+      <span className={vencedor ? 'badge-vencedor' : tentou ? 'badge-tentou' : 'badge-disponivel'}>
+        {vencedor ? '🏆 Vencedor' : tentou ? '🔑 Tentou' : '● Disponível'}
       </span>
 
       {/* Ações */}
       <div className="flex items-center gap-1 flex-shrink-0">
-        {!sorteado && (
+        {participante.status === 'disponivel' && (
           <button
             onClick={() => onEdit(participante)}
             className="p-1.5 rounded-lg transition-all duration-150 hover:bg-ouro-600/10"
@@ -88,27 +107,42 @@ function ParticipantCard({
 }
 
 export default function ParticipantesPage() {
-  const { participantes, addParticipante, removeParticipante, editarParticipante,
-    importarParticipantes, resetarTodos, limparTodos } = useParticipantesStore();
-  const { somAtivo } = useConfigStore();
-
+  const [mounted, setMounted] = useState(false);
   const [nome, setNome] = useState('');
   const [contato, setContato] = useState('');
   const [busca, setBusca] = useState('');
-  const [filtro, setFiltro] = useState<'todos' | 'disponivel' | 'sorteado'>('todos');
+  const [filtro, setFiltro] = useState<'todos' | 'disponivel' | 'tentou' | 'vencedor'>('todos');
   const [editando, setEditando] = useState<Participante | null>(null);
   const [nomeEdit, setNomeEdit] = useState('');
   const [contatoEdit, setContatoEdit] = useState('');
   const [showConfirm, setShowConfirm] = useState<'limpar' | 'resetar' | null>(null);
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const fotoInputRef = useRef<HTMLInputElement>(null);
+  
+  const { participantes, addParticipante, removeParticipante, editarParticipante,
+    importarParticipantes, resetarTodos, limparTodos } = useParticipantesStore();
+  const { somAtivo } = useConfigStore();
 
-  const handleAdd = (e: React.FormEvent) => {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim()) return;
-    addParticipante(nome, contato);
+    
+    const novoId = addParticipante(nome, contato, !!fotoFile);
+    if (fotoFile) {
+      await salvarFotoParticipante(novoId, fotoFile).catch(console.error);
+    }
+    
     if (somAtivo) somTick();
     setNome('');
     setContato('');
+    setFotoFile(null);
   };
 
   const handleDelete = (id: string) => {
@@ -158,7 +192,8 @@ export default function ParticipantesPage() {
   const filtered = participantes
     .filter((p) => {
       if (filtro === 'disponivel') return p.status === 'disponivel';
-      if (filtro === 'sorteado') return p.status === 'sorteado';
+      if (filtro === 'tentou') return p.status === 'tentou';
+      if (filtro === 'vencedor') return p.status === 'vencedor';
       return true;
     })
     .filter((p) =>
@@ -168,7 +203,8 @@ export default function ParticipantesPage() {
 
   const total = participantes.length;
   const disponiveis = participantes.filter((p) => p.status === 'disponivel').length;
-  const sorteados = participantes.filter((p) => p.status === 'sorteado').length;
+  const tentaram = participantes.filter((p) => p.status === 'tentou').length;
+  const vencedores = participantes.filter((p) => p.status === 'vencedor').length;
 
   return (
     <div className="page-enter">
@@ -177,7 +213,7 @@ export default function ParticipantesPage() {
           Participantes
         </h1>
         <p className="text-xs text-ouro-600/60">
-          {total} total · {disponiveis} disponíveis · {sorteados} sorteados
+          {total} total · {disponiveis} disponíveis · {tentaram} tentaram · {vencedores} vencedores
         </p>
       </div>
 
@@ -205,6 +241,39 @@ export default function ParticipantesPage() {
             value={contato}
             onChange={(e) => setContato(e.target.value)}
           />
+          <div className="flex items-center gap-2 mt-2 mb-2">
+            <button
+              type="button"
+              onClick={() => fotoInputRef.current?.click()}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-bold transition-all ${
+                fotoFile 
+                  ? 'bg-ouro-500/20 text-ouro-400 border border-ouro-500/50' 
+                  : 'bg-escuro-800/50 text-ouro-700/60 border border-ouro-700/20'
+              }`}
+            >
+              <Camera size={16} />
+              {fotoFile ? 'Foto Selecionada' : 'Adicionar Foto'}
+            </button>
+            {fotoFile && (
+              <button
+                type="button"
+                onClick={() => setFotoFile(null)}
+                className="p-2 rounded-xl bg-vermelho-900/30 text-vermelho-500 border border-vermelho-900/50"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+            <input 
+              ref={fotoInputRef} 
+              type="file" 
+              accept="image/*" 
+              capture="environment" 
+              className="hidden" 
+              onChange={(e) => {
+                if (e.target.files?.[0]) setFotoFile(e.target.files[0]);
+              }} 
+            />
+          </div>
           <div className="flex gap-2">
             <button type="submit" className="btn-gold flex-1 py-2.5 text-sm">
               + Adicionar
@@ -251,7 +320,8 @@ export default function ParticipantesPage() {
             {[
               { key: 'todos', label: `Todos (${total})` },
               { key: 'disponivel', label: `Disponíveis (${disponiveis})` },
-              { key: 'sorteado', label: `Sorteados (${sorteados})` },
+              { key: 'tentou', label: `Tentaram (${tentaram})` },
+              { key: 'vencedor', label: `Vencedores (${vencedores})` },
             ].map(({ key, label }) => (
               <button
                 key={key}

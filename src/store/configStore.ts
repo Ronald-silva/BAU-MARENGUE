@@ -7,6 +7,7 @@ interface Config {
   quantidadeVencedores: number;
   somAtivo: boolean;
   animacaoAtiva: boolean;
+  mostrarTodasTentativas: boolean; // true = mostra todas, false = só vencedores
 }
 
 interface ConfigState extends Config {
@@ -21,6 +22,7 @@ export const useConfigStore = create<ConfigState>()(
       quantidadeVencedores: 1,
       somAtivo: true,
       animacaoAtiva: true,
+      mostrarTodasTentativas: false,
       atualizar: (config) => set((state) => ({ ...state, ...config })),
     }),
     { name: 'bau-merengue-config' }

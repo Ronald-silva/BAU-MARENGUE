@@ -3,7 +3,6 @@ import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { BackgroundParticles } from '@/components/ui/BackgroundParticles';
 import { PwaRegistry } from '@/components/layout/PwaRegistry';
-import { ClientOnly } from '@/components/ClientOnly';
 
 export const metadata: Metadata = {
   title: 'Baú Merengue — Aqui 2 é 1 | Sistema de Sorteio Digital',
@@ -38,14 +37,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <PwaRegistry />
         <BackgroundParticles />
-        <ClientOnly>
-          <Header />
-          <main className="min-h-screen pt-4 sm:pt-6 pb-16 px-4 sm:px-6">
-            <div className="max-w-4xl mx-auto w-full">
-              {children}
-            </div>
-          </main>
-        </ClientOnly>
+        <Header />
+        <main className="min-h-screen pt-4 sm:pt-6 pb-16 px-4 sm:px-6">
+          <div className="max-w-4xl mx-auto w-full">
+            {children}
+          </div>
+        </main>
       </body>
     </html>
   );

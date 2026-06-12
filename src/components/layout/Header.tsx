@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Users, Trophy, History, Settings, Sparkles } from 'lucide-react';
 import { useParticipantesStore } from '@/store/participantesStore';
+import { useEffect, useState } from 'react';
 
 const navItems = [
   { href: '/', icon: Sparkles, label: 'Início' },
@@ -15,7 +16,13 @@ const navItems = [
 export function Header() {
   const pathname = usePathname();
   const { participantes } = useParticipantesStore();
-  const disponiveis = participantes.filter((p) => p.status === 'disponivel').length;
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  const disponiveis = mounted ? participantes.filter((p) => p.status === 'disponivel').length : 0;
 
   return (
     <header className="sticky top-0 z-50 w-full flex flex-col items-center shadow-2xl">
@@ -69,7 +76,7 @@ export function Header() {
             }}
           >
             <span className="text-green-400">●</span>
-            <span className="text-creme-100">{disponiveis} disponíveis</span>
+            <span className="text-creme-100">{disponiveis} {disponiveis === 1 ? 'disponível' : 'disponíveis'}</span>
           </div>
         </div>
         </div>

@@ -1,17 +1,27 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Save, Volume2, VolumeX, Zap, ZapOff } from 'lucide-react';
 import { useConfigStore } from '@/store/configStore';
 import { somVitoria } from '@/lib/audio';
 
 export default function ConfiguracoesPage() {
-  const { eventoNome, premioDescricao, quantidadeVencedores, somAtivo, animacaoAtiva, atualizar } = useConfigStore();
-
-  const [nome, setNome] = useState(eventoNome);
-  const [premio, setPremio] = useState(premioDescricao);
-  const [qtd, setQtd] = useState(quantidadeVencedores);
+  const [mounted, setMounted] = useState(false);
+  const [nome, setNome] = useState('');
+  const [premio, setPremio] = useState('');
+  const [qtd, setQtd] = useState(1);
   const [salvo, setSalvo] = useState(false);
+  
+  const { eventoNome, premioDescricao, quantidadeVencedores, somAtivo, animacaoAtiva, mostrarTodasTentativas, atualizar } = useConfigStore();
+
+  useEffect(() => {
+    setNome(eventoNome);
+    setPremio(premioDescricao);
+    setQtd(quantidadeVencedores);
+    setMounted(true);
+  }, [eventoNome, premioDescricao, quantidadeVencedores]);
+
+  if (!mounted) return null;
 
   const handleSalvar = (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,6 +153,41 @@ export default function ConfiguracoesPage() {
           </div>
         </motion.div>
 
+        {/* Histórico */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="card-bau p-5"
+        >
+          <h2 className="font-bold text-sm text-ouro-400 uppercase tracking-wider mb-4">📋 Histórico</h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-sm text-creme-100">Visualização</div>
+                <div className="text-xs text-ouro-600/50">O que mostrar no histórico</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => atualizar({ mostrarTodasTentativas: !mostrarTodasTentativas })}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200"
+                style={{
+                  background: mostrarTodasTentativas ? 'rgba(255,215,0,0.15)' : 'rgba(34,197,94,0.15)',
+                  border: `1px solid ${mostrarTodasTentativas ? 'rgba(255,215,0,0.4)' : 'rgba(34,197,94,0.4)'}`,
+                  color: mostrarTodasTentativas ? '#FFD700' : '#4ADE80',
+                }}
+              >
+                {mostrarTodasTentativas ? '📜 Todas' : '🏆 Vencedores'}
+              </button>
+            </div>
+            <p className="text-xs text-ouro-700/50">
+              {mostrarTodasTentativas 
+                ? 'Mostrando todas as tentativas (sucessos e falhas)'
+                : 'Mostrando apenas os vencedores'}
+            </p>
+          </div>
+        </motion.div>
+
         {/* PWA Info */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -171,8 +216,9 @@ export default function ConfiguracoesPage() {
           <h2 className="font-bold text-sm text-ouro-400 uppercase tracking-wider mb-3">ℹ️ Sobre</h2>
           <div className="space-y-1 text-xs text-ouro-700/50">
             <p>🏆 <strong className="text-ouro-600/70">Baú Merengue</strong> · Aqui 2 é 1</p>
+            <p>🗝️ Sistema de sorteio para tentativa de abertura do baú</p>
             <p>🔒 Sorteio com algoritmo Fisher-Yates + seed criptográfico</p>
-            <p>🔐 Auditável via hash SHA-256 por rodada</p>
+            <p>🔐 Auditável via hash SHA-256 por tentativa</p>
             <p>💾 Dados salvos localmente no seu dispositivo</p>
           </div>
         </motion.div>
