@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <BackgroundParticles />
         <Header />
         <main className="min-h-screen pt-4 sm:pt-6 pb-16 px-4 sm:px-6">
-          <div className="max-w-4xl mx-auto w-full">
+          <div className="max-w-6xl mx-auto w-full">
             {children}
           </div>
         </main>
