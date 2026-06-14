@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /home/ronald/BAU-MERENGUE rev-parse HEAD)",
+      "Bash(git commit *)",
+      "Bash(git -C /home/ronald/BAU-MERENGUE diff 1d8df4309c8d56e321fdd83dc26118398b353d35..8a6fd17fc67b35ec963a0c048c7a94f96caa51bd)"
+    ]
+  }
+}
