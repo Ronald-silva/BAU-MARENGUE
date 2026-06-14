@@ -77,20 +77,20 @@ export default function DashboardPage() {
         <div className="absolute top-8 left-4 text-xl animate-coin-float-2 opacity-60">✨</div>
         <div className="absolute bottom-4 right-8 text-lg animate-coin-float-3 opacity-50">⭐</div>
 
-        <div className="relative z-10 px-6 py-8 lg:py-14 text-center">
+        <div className="relative z-10 px-6 py-8 lg:py-10 text-center">
           {/* Logo imagem como hero */}
           <motion.div
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
             className="flex justify-center mb-4"
           >
-            <img src="/icons/icon-512.png" alt="Logo" className="w-24 h-24 lg:w-40 lg:h-40 rounded-2xl" style={{ filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.6))' }} />
+            <img src="/icons/icon-512.png" alt="Logo" className="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl" style={{ filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.6))' }} />
           </motion.div>
 
-          <h1 className="font-display font-bold text-3xl lg:text-6xl mb-1 text-gold-gradient">
+          <h1 className="font-display font-bold text-3xl lg:text-4xl mb-1 text-gold-gradient">
             {eventoNome.toUpperCase()}
           </h1>
-          <p className="text-ouro-500/80 text-sm lg:text-xl mb-1">AQUI 2 É 1</p>
+          <p className="text-ouro-500/80 text-sm lg:text-lg mb-1">AQUI 2 É 1</p>
           {premioDescricao && (
             <div
               className="inline-flex items-center gap-2 mt-2 px-4 lg:px-7 py-1.5 lg:py-3 rounded-full text-sm lg:text-lg font-bold"
