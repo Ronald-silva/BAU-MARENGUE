@@ -236,7 +236,7 @@ export default function SorteioPage() {
       </div>
 
       {/* Arena principal */}
-      <div className="relative w-full max-w-sm mx-auto mb-6">
+      <div className="relative w-full max-w-sm lg:max-w-2xl mx-auto mb-6">
         {/* Raios de fundo */}
         <AnimatePresence>
           {(estado !== 'idle') && (
@@ -270,7 +270,7 @@ export default function SorteioPage() {
           animate={estado === 'sucesso' ? { scale: [1, 1.02, 1] } : {}}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex flex-col items-center justify-center p-8 min-h-[320px]">
+          <div className="flex flex-col items-center justify-center p-8 lg:p-14 min-h-[320px] lg:min-h-[500px]">
             {/* Estado: IDLE */}
             {estado === 'idle' && !semParticipantes && (
               <motion.div
@@ -354,16 +354,16 @@ export default function SorteioPage() {
                   <motion.div
                     animate={{ scale: [0.8, 1], rotate: [0, -5, 5, 0] }}
                     transition={{ duration: 0.5 }}
-                    className="mb-4 mx-auto w-24 h-24 rounded-full border-4 border-ouro-400 overflow-hidden shadow-[0_0_30px_rgba(255,215,0,0.8)] flex items-center justify-center bg-escuro-900"
+                    className="mb-4 mx-auto w-24 h-24 lg:w-36 lg:h-36 rounded-full border-4 border-ouro-400 overflow-hidden shadow-[0_0_30px_rgba(255,215,0,0.8)] flex items-center justify-center bg-escuro-900"
                   >
                     <img src={fotoUrl} alt={selecionado.nome} className="w-full h-full object-cover" />
                   </motion.div>
                 ) : (
-                  <div className="text-5xl mb-3">🔑</div>
+                  <div className="text-5xl lg:text-7xl mb-3">🔑</div>
                 )}
-                <div className="text-ouro-400 text-xs uppercase tracking-widest mb-3">Selecionado!</div>
+                <div className="text-ouro-400 text-xs lg:text-sm uppercase tracking-widest mb-3">Selecionado!</div>
                 <div
-                  className="font-display font-bold text-3xl text-ouro-400"
+                  className="font-display font-bold text-3xl lg:text-6xl text-ouro-400"
                   style={{ textShadow: '0 0 30px rgba(255,215,0,0.8)' }}
                 >
                   {selecionado.nome}
@@ -380,50 +380,52 @@ export default function SorteioPage() {
                 className="text-center w-full"
               >
                 {fotoUrl && (
-                  <div className="mb-3 mx-auto w-20 h-20 rounded-full border-3 border-ouro-400 overflow-hidden shadow-[0_0_20px_rgba(255,215,0,0.6)] flex items-center justify-center bg-escuro-900">
+                  <div className="mb-3 mx-auto w-20 h-20 lg:w-28 lg:h-28 rounded-full border-3 border-ouro-400 overflow-hidden shadow-[0_0_20px_rgba(255,215,0,0.6)] flex items-center justify-center bg-escuro-900">
                     <img src={fotoUrl} alt={selecionado.nome} className="w-full h-full object-cover" />
                   </div>
                 )}
-                <div className="font-bold text-lg text-creme-100 mb-1">{selecionado.nome}</div>
-                <div className="text-ouro-600/70 text-xs mb-4">vai tentar abrir o baú</div>
-                
+                <div className="font-bold text-lg lg:text-3xl text-creme-100 mb-1">{selecionado.nome}</div>
+                <div className="text-ouro-600/70 text-xs lg:text-base mb-4">vai tentar abrir o baú</div>
+
                 <motion.div
                   animate={{ scale: [1, 1.1, 1], rotate: [0, -10, 10, 0] }}
                   transition={{ duration: 1, repeat: Infinity }}
-                  className="text-6xl mb-6"
+                  className="text-6xl lg:text-9xl mb-6"
                 >
                   🗝️
                 </motion.div>
 
-                <div className="text-ouro-500 text-sm uppercase tracking-wider mb-4 font-bold">
+                <div className="text-ouro-500 text-sm lg:text-xl uppercase tracking-wider mb-4 font-bold">
                   A chave abriu o baú?
                 </div>
 
-                <div className="flex gap-3 px-4">
+                <div className="flex gap-3 lg:gap-6 px-4">
                   <button
                     onClick={() => tentarAbrirBau(true)}
-                    className="flex-1 flex flex-col items-center gap-2 py-4 rounded-xl font-bold transition-all duration-200 active:scale-95"
+                    className="flex-1 flex flex-col items-center gap-2 py-4 lg:py-8 rounded-xl font-bold transition-all duration-200 active:scale-95"
                     style={{
                       background: 'linear-gradient(135deg, rgba(34,197,94,0.2), rgba(22,163,74,0.15))',
                       border: '2px solid rgba(34,197,94,0.5)',
                     }}
                   >
-                    <CheckCircle size={28} className="text-green-400" />
-                    <span className="text-green-400 text-sm">SIM</span>
-                    <span className="text-green-600/60 text-xs">Vencedor!</span>
+                    <CheckCircle size={28} className="text-green-400 lg:hidden" />
+                    <CheckCircle size={48} className="text-green-400 hidden lg:block" />
+                    <span className="text-green-400 text-sm lg:text-2xl">SIM</span>
+                    <span className="text-green-600/60 text-xs lg:text-base">Vencedor!</span>
                   </button>
 
                   <button
                     onClick={() => tentarAbrirBau(false)}
-                    className="flex-1 flex flex-col items-center gap-2 py-4 rounded-xl font-bold transition-all duration-200 active:scale-95"
+                    className="flex-1 flex flex-col items-center gap-2 py-4 lg:py-8 rounded-xl font-bold transition-all duration-200 active:scale-95"
                     style={{
                       background: 'linear-gradient(135deg, rgba(220,20,60,0.2), rgba(185,28,28,0.15))',
                       border: '2px solid rgba(220,20,60,0.5)',
                     }}
                   >
-                    <XCircle size={28} className="text-red-400" />
-                    <span className="text-red-400 text-sm">NÃO</span>
-                    <span className="text-red-600/60 text-xs">Tente outro</span>
+                    <XCircle size={28} className="text-red-400 lg:hidden" />
+                    <XCircle size={48} className="text-red-400 hidden lg:block" />
+                    <span className="text-red-400 text-sm lg:text-2xl">NÃO</span>
+                    <span className="text-red-600/60 text-xs lg:text-base">Tente outro</span>
                   </button>
                 </div>
               </motion.div>
@@ -442,7 +444,7 @@ export default function SorteioPage() {
                   <motion.div
                     animate={{ scale: [1, 1.05, 1], rotate: [0, -2, 2, 0] }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="mb-4 mx-auto w-32 h-32 rounded-full border-4 border-ouro-400 overflow-hidden shadow-[0_0_30px_rgba(255,215,0,0.8)] flex items-center justify-center bg-escuro-900"
+                    className="mb-4 mx-auto w-32 h-32 lg:w-44 lg:h-44 rounded-full border-4 border-ouro-400 overflow-hidden shadow-[0_0_30px_rgba(255,215,0,0.8)] flex items-center justify-center bg-escuro-900"
                   >
                     <img src={fotoUrl} alt={selecionado.nome} className="w-full h-full object-cover" />
                   </motion.div>
@@ -450,7 +452,7 @@ export default function SorteioPage() {
                   <motion.div
                     animate={{ scale: [1, 1.15, 1], rotate: [0, -5, 5, 0] }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="text-7xl mb-3"
+                    className="text-7xl lg:text-9xl mb-3"
                     style={{ filter: 'drop-shadow(0 0 30px rgba(255,215,0,0.8))' }}
                   >
                     🏆
@@ -465,7 +467,7 @@ export default function SorteioPage() {
                     <CheckCircle size={14} /> ABRIU O BAÚ!
                   </div>
                   <div
-                    className="font-display font-bold text-4xl text-gold-gradient mb-2 leading-tight"
+                    className="font-display font-bold text-4xl lg:text-6xl text-gold-gradient mb-2 leading-tight"
                     style={{ textShadow: 'none', filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.6))' }}
                   >
                     {selecionado.nome}
@@ -523,14 +525,14 @@ export default function SorteioPage() {
       <div className="absolute left-10 bottom-1/3 text-lg animate-coin-float-3 opacity-30 pointer-events-none">⭐</div>
 
       {/* Controles */}
-      <div className="relative z-10 w-full max-w-sm space-y-3">
+      <div className="relative z-10 w-full max-w-sm lg:max-w-2xl space-y-3">
         {(estado === 'idle' || estado === 'sucesso' || estado === 'falha') && (
           <motion.button
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             onClick={estado === 'idle' ? iniciarSorteio : reiniciar}
             disabled={semParticipantes && estado === 'idle'}
-            className="w-full relative overflow-hidden rounded-2xl py-5 font-display font-bold text-xl tracking-widest uppercase text-escuro-900 transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full relative overflow-hidden rounded-2xl py-5 lg:py-7 font-display font-bold text-xl lg:text-2xl tracking-widest uppercase text-escuro-900 transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
               background: (semParticipantes && estado === 'idle')
                 ? 'rgba(139,101,20,0.3)'
