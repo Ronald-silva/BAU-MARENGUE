@@ -46,17 +46,17 @@ function HistoricoItem({
       className="card-bau overflow-hidden"
     >
       <button
-        className="w-full p-4 text-left flex items-center gap-3"
+        className="w-full p-4 lg:p-6 text-left flex items-center gap-3 lg:gap-4"
         onClick={onToggle}
       >
         <div className="relative">
           {fotoUrl ? (
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-ouro-400">
+            <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-full overflow-hidden border-2 border-ouro-400">
               <img src={fotoUrl} alt="Avatar" className="w-full h-full object-cover" />
             </div>
           ) : (
             <div
-              className="w-10 h-10 rounded-full flex items-center justify-center font-display font-bold text-sm flex-shrink-0"
+              className="w-10 h-10 lg:w-14 lg:h-14 rounded-full flex items-center justify-center font-display font-bold text-sm lg:text-base flex-shrink-0"
               style={{ background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#0A0500' }}
             >
               #{registro.rodada}
@@ -70,10 +70,10 @@ function HistoricoItem({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="font-bold text-sm text-creme-100 truncate flex items-center gap-2">
+          <div className="font-bold text-sm lg:text-base text-creme-100 truncate flex items-center gap-2">
             {registro.sucesso ? '🏆' : '🔑'} {registro.participante.nome}
           </div>
-          <div className="text-xs text-ouro-600/60">
+          <div className="text-xs lg:text-sm text-ouro-600/60">
             {data.toLocaleDateString('pt-BR')} às {data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
             {registro.sucesso ? ' · Rodada ' + registro.rodada : ' · Tentativa'}
           </div>
@@ -98,27 +98,27 @@ function HistoricoItem({
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 space-y-2 border-t border-ouro-700/20 pt-3">
-              <div className="flex items-center justify-between text-sm">
+            <div className="px-4 lg:px-7 pb-4 lg:pb-7 space-y-2 lg:space-y-3 border-t border-ouro-700/20 pt-3 lg:pt-5">
+              <div className="flex items-center justify-between text-sm lg:text-base">
                 <span className="text-ouro-600/60">Resultado</span>
                 <span className={registro.sucesso ? 'text-green-400 font-bold' : 'text-ouro-400'}>
                   {registro.sucesso ? '✅ VENCEDOR' : '🔑 Tentou abrir'}
                 </span>
               </div>
               {registro.participante.contato && (
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-sm lg:text-base">
                   <span className="text-ouro-600/60">Contato</span>
                   <span className="text-creme-100">{registro.participante.contato}</span>
                 </div>
               )}
               {registro.eventoNome && (
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-sm lg:text-base">
                   <span className="text-ouro-600/60">Evento</span>
                   <span className="text-creme-100">{registro.eventoNome}</span>
                 </div>
               )}
               {registro.premioDescricao && (
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-sm lg:text-base">
                   <span className="text-ouro-600/60">Prêmio</span>
                   <span className="text-creme-100">{registro.premioDescricao}</span>
                 </div>
@@ -190,8 +190,8 @@ export default function HistoricoPage() {
     <div className="page-enter">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="font-display font-bold text-2xl text-gold-gradient">Histórico</h1>
-          <p className="text-xs text-ouro-600/60">
+          <h1 className="font-display font-bold text-2xl lg:text-4xl text-gold-gradient">Histórico</h1>
+          <p className="text-xs lg:text-sm text-ouro-600/60">
             {historicoFiltrado.length} {mostrarTodasTentativas ? 'registro' : 'vencedor'}{historicoFiltrado.length !== 1 ? (mostrarTodasTentativas ? 's' : 'es') : ''}
           </p>
         </div>
@@ -199,7 +199,7 @@ export default function HistoricoPage() {
           <div className="flex gap-2">
             <button
               onClick={exportarCSV}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 lg:px-5 py-2 lg:py-3 rounded-xl text-xs lg:text-sm font-bold transition-all duration-200"
               style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.25)', color: '#FFD700' }}
             >
               <Download size={13} /> CSV
@@ -226,7 +226,7 @@ export default function HistoricoPage() {
           <p className="text-ouro-700/40 text-xs mt-2">Os registros aparecem aqui após cada sorteio.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 lg:space-y-4">
           {historicoFiltrado.map((registro, i) => (
             <HistoricoItem
               key={registro.id}

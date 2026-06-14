@@ -17,7 +17,7 @@ function StatCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card-bau p-5 flex flex-col gap-2"
+      className="card-bau p-5 lg:p-7 flex flex-col gap-2"
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-bold uppercase tracking-widest" style={{ color: `${color}99` }}>
@@ -25,10 +25,10 @@ function StatCard({
         </span>
         <Icon size={18} style={{ color }} />
       </div>
-      <div className="text-3xl sm:text-4xl font-display font-bold" style={{ color }}>
+      <div className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold" style={{ color }}>
         {value}
       </div>
-      <div className="text-xs text-ouro-600/60">{sub}</div>
+      <div className="text-xs lg:text-sm text-ouro-600/60">{sub}</div>
     </motion.div>
   );
 }
@@ -77,23 +77,23 @@ export default function DashboardPage() {
         <div className="absolute top-8 left-4 text-xl animate-coin-float-2 opacity-60">✨</div>
         <div className="absolute bottom-4 right-8 text-lg animate-coin-float-3 opacity-50">⭐</div>
 
-        <div className="relative z-10 px-6 py-8 text-center">
+        <div className="relative z-10 px-6 py-8 lg:py-14 text-center">
           {/* Logo imagem como hero */}
           <motion.div
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
             className="flex justify-center mb-4"
           >
-            <img src="/icons/icon-512.png" alt="Logo" className="w-24 h-24 rounded-2xl" style={{ filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.6))' }} />
+            <img src="/icons/icon-512.png" alt="Logo" className="w-24 h-24 lg:w-40 lg:h-40 rounded-2xl" style={{ filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.6))' }} />
           </motion.div>
 
-          <h1 className="font-display font-bold text-3xl mb-1 text-gold-gradient">
+          <h1 className="font-display font-bold text-3xl lg:text-6xl mb-1 text-gold-gradient">
             {eventoNome.toUpperCase()}
           </h1>
-          <p className="text-ouro-500/80 text-sm mb-1">AQUI 2 É 1</p>
+          <p className="text-ouro-500/80 text-sm lg:text-xl mb-1">AQUI 2 É 1</p>
           {premioDescricao && (
             <div
-              className="inline-flex items-center gap-2 mt-2 px-4 py-1.5 rounded-full text-sm font-bold"
+              className="inline-flex items-center gap-2 mt-2 px-4 lg:px-7 py-1.5 lg:py-3 rounded-full text-sm lg:text-lg font-bold"
               style={{
                 background: 'rgba(220,20,60,0.2)',
                 border: '1px solid rgba(220,20,60,0.4)',
@@ -125,7 +125,7 @@ export default function DashboardPage() {
       >
         <Link href="/sorteio">
           <button
-            className="w-full relative overflow-hidden rounded-2xl py-5 font-display font-bold text-2xl tracking-widest uppercase text-escuro-900 transition-all duration-300 active:scale-95"
+            className="w-full relative overflow-hidden rounded-2xl py-5 lg:py-8 font-display font-bold text-2xl lg:text-4xl tracking-widest uppercase text-escuro-900 transition-all duration-300 active:scale-95"
             style={{
               background: 'linear-gradient(135deg, #FFE066 0%, #FFD700 30%, #FFA500 60%, #FF8C00 100%)',
               boxShadow: '0 0 40px rgba(255,215,0,0.5), 0 8px 30px rgba(255,165,0,0.4), 0 2px 8px rgba(0,0,0,0.5)',
@@ -155,27 +155,29 @@ export default function DashboardPage() {
       >
         <Link href="/participantes">
           <button
-            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 active:scale-95"
+            className="w-full py-3 lg:py-5 rounded-xl font-bold text-sm lg:text-base flex items-center justify-center gap-2 transition-all duration-200 active:scale-95"
             style={{
               background: 'rgba(220,20,60,0.15)',
               border: '1px solid rgba(220,20,60,0.4)',
               color: '#FF6B6B',
             }}
           >
-            <Users size={16} />
+            <Users size={16} className="lg:hidden" />
+            <Users size={22} className="hidden lg:block" />
             Participantes
           </button>
         </Link>
         <Link href="/historico">
           <button
-            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 active:scale-95"
+            className="w-full py-3 lg:py-5 rounded-xl font-bold text-sm lg:text-base flex items-center justify-center gap-2 transition-all duration-200 active:scale-95"
             style={{
               background: 'rgba(255,215,0,0.08)',
               border: '1px solid rgba(255,215,0,0.2)',
               color: '#FFD700',
             }}
           >
-            <History size={16} />
+            <History size={16} className="lg:hidden" />
+            <History size={22} className="hidden lg:block" />
             Histórico
           </button>
         </Link>
@@ -187,36 +189,36 @@ export default function DashboardPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="card-bau p-4"
+          className="card-bau p-4 lg:p-7"
         >
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display font-bold text-sm text-ouro-400 uppercase tracking-wider">
+            <h2 className="font-display font-bold text-sm lg:text-base text-ouro-400 uppercase tracking-wider">
               Últimos Vencedores
             </h2>
-            <Link href="/historico" className="text-xs text-ouro-600 flex items-center gap-1 hover:text-ouro-400">
+            <Link href="/historico" className="text-xs lg:text-sm text-ouro-600 flex items-center gap-1 hover:text-ouro-400">
               Ver todos <ChevronRight size={12} />
             </Link>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 lg:space-y-3">
             {ultimosSorteios.map((registro) => (
               <div
                 key={registro.id}
-                className="flex items-center gap-3 p-2.5 rounded-xl"
+                className="flex items-center gap-3 p-2.5 lg:p-4 rounded-xl"
                 style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.1)' }}
               >
                 <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+                  className="w-8 h-8 lg:w-12 lg:h-12 rounded-full flex items-center justify-center font-bold text-sm lg:text-xl flex-shrink-0"
                   style={{ background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#0A0500' }}
                 >
                   {registro.participante.nome.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-sm text-creme-100 truncate">{registro.participante.nome}</div>
-                  <div className="text-xs text-ouro-600/60">
+                  <div className="font-bold text-sm lg:text-lg text-creme-100 truncate">{registro.participante.nome}</div>
+                  <div className="text-xs lg:text-sm text-ouro-600/60">
                     Rodada {registro.rodada} · {new Date(registro.dataHora).toLocaleDateString('pt-BR')}
                   </div>
                 </div>
-                <span className="text-ouro-400 text-lg">🏆</span>
+                <span className="text-ouro-400 text-lg lg:text-2xl">🏆</span>
               </div>
             ))}
           </div>

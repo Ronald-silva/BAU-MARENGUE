@@ -26,7 +26,7 @@ function ParticipantCard({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -30, scale: 0.9 }}
-      className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200"
+      className="flex items-center gap-3 lg:gap-4 p-3 lg:p-5 rounded-xl transition-all duration-200"
       style={{
         background: vencedor
           ? 'linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,165,0,0.08) 100%)'
@@ -42,7 +42,7 @@ function ParticipantCard({
     >
       {/* Avatar */}
       <div
-        className="relative w-10 h-10 rounded-full flex items-center justify-center font-display font-bold text-lg flex-shrink-0"
+        className="relative w-10 h-10 lg:w-14 lg:h-14 rounded-full flex items-center justify-center font-display font-bold text-lg lg:text-2xl flex-shrink-0"
         style={{
           background: vencedor
             ? 'linear-gradient(135deg, #FFD700, #FFA500)'
@@ -68,13 +68,13 @@ function ParticipantCard({
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div
-          className="font-bold text-sm truncate"
+          className="font-bold text-sm lg:text-base truncate"
           style={{ color: vencedor ? '#FFD700' : tentou ? '#FFA500' : '#FFF8DC' }}
         >
           {participante.nome}
         </div>
         {participante.contato && (
-          <div className="text-xs text-ouro-700/60 truncate">{participante.contato}</div>
+          <div className="text-xs lg:text-sm text-ouro-700/60 truncate">{participante.contato}</div>
         )}
       </div>
 
@@ -209,10 +209,10 @@ export default function ParticipantesPage() {
   return (
     <div className="page-enter">
       <div className="mb-5">
-        <h1 className="font-display font-bold text-2xl text-gold-gradient mb-1">
+        <h1 className="font-display font-bold text-2xl lg:text-4xl text-gold-gradient mb-1">
           Participantes
         </h1>
-        <p className="text-xs text-ouro-600/60">
+        <p className="text-xs lg:text-sm text-ouro-600/60">
           {total} total · {disponiveis} disponíveis · {tentaram} tentaram · {vencedores} vencedores
         </p>
       </div>
@@ -222,21 +222,23 @@ export default function ParticipantesPage() {
         onSubmit={handleAdd}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="card-bau p-4 mb-4"
+        className="card-bau p-4 lg:p-8 mb-4"
       >
-        <h2 className="font-bold text-sm text-ouro-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-          <UserPlus size={15} /> Adicionar Participante
+        <h2 className="font-bold text-sm lg:text-base text-ouro-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <UserPlus size={15} className="lg:hidden" />
+          <UserPlus size={20} className="hidden lg:block" />
+          Adicionar Participante
         </h2>
         <div className="space-y-2">
           <input
-            className="input-bau"
+            className="input-bau lg:py-4 lg:text-lg"
             placeholder="Nome completo *"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             required
           />
           <input
-            className="input-bau"
+            className="input-bau lg:py-4 lg:text-lg"
             placeholder="Telefone / Contato (opcional)"
             value={contato}
             onChange={(e) => setContato(e.target.value)}
@@ -275,7 +277,7 @@ export default function ParticipantesPage() {
             />
           </div>
           <div className="flex gap-2">
-            <button type="submit" className="btn-gold flex-1 py-2.5 text-sm">
+            <button type="submit" className="btn-gold flex-1 py-2.5 lg:py-4 text-sm lg:text-base">
               + Adicionar
             </button>
             <button
@@ -326,7 +328,7 @@ export default function ParticipantesPage() {
               <button
                 key={key}
                 onClick={() => setFiltro(key as typeof filtro)}
-                className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-150"
+                className="flex-shrink-0 px-3 lg:px-5 py-1.5 lg:py-2.5 rounded-full text-xs lg:text-sm font-bold transition-all duration-150"
                 style={{
                   background: filtro === key ? 'rgba(255,215,0,0.2)' : 'rgba(255,255,255,0.04)',
                   border: filtro === key ? '1px solid rgba(255,215,0,0.5)' : '1px solid rgba(255,255,255,0.08)',
@@ -341,7 +343,7 @@ export default function ParticipantesPage() {
       )}
 
       {/* Lista */}
-      <div className="space-y-2 mb-4">
+      <div className="space-y-2 lg:space-y-3 mb-4">
         <AnimatePresence mode="popLayout">
           {filtered.length === 0 ? (
             <motion.div
@@ -372,7 +374,7 @@ export default function ParticipantesPage() {
         <div className="flex gap-2">
           <button
             onClick={() => setShowConfirm('resetar')}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 lg:py-4 rounded-xl text-xs lg:text-sm font-bold transition-all duration-200"
             style={{
               background: 'rgba(255,165,0,0.08)',
               border: '1px solid rgba(255,165,0,0.2)',
@@ -383,7 +385,7 @@ export default function ParticipantesPage() {
           </button>
           <button
             onClick={() => setShowConfirm('limpar')}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 lg:py-4 rounded-xl text-xs lg:text-sm font-bold transition-all duration-200"
             style={{
               background: 'rgba(220,20,60,0.08)',
               border: '1px solid rgba(220,20,60,0.2)',

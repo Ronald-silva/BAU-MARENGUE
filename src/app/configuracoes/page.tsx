@@ -38,8 +38,8 @@ export default function ConfiguracoesPage() {
   return (
     <div className="page-enter">
       <div className="mb-5">
-        <h1 className="font-display font-bold text-2xl text-gold-gradient mb-1">Configurações</h1>
-        <p className="text-xs text-ouro-600/60">Personalize o seu sorteio</p>
+        <h1 className="font-display font-bold text-2xl lg:text-4xl text-gold-gradient mb-1">Configurações</h1>
+        <p className="text-xs lg:text-sm text-ouro-600/60">Personalize o seu sorteio</p>
       </div>
 
       <form onSubmit={handleSalvar} className="space-y-4">
@@ -47,14 +47,14 @@ export default function ConfiguracoesPage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card-bau p-5"
+          className="card-bau p-5 lg:p-8"
         >
-          <h2 className="font-bold text-sm text-ouro-400 uppercase tracking-wider mb-4">🎪 Evento</h2>
+          <h2 className="font-bold text-sm lg:text-base text-ouro-400 uppercase tracking-wider mb-4">🎪 Evento</h2>
           <div className="space-y-3">
             <div>
-              <label className="block text-xs text-ouro-600/70 mb-1.5 font-medium">Nome do Evento</label>
+              <label className="block text-xs lg:text-sm text-ouro-600/70 mb-1.5 font-medium">Nome do Evento</label>
               <input
-                className="input-bau"
+                className="input-bau lg:py-4 lg:text-lg"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Ex: Baú Merengue"
@@ -62,9 +62,9 @@ export default function ConfiguracoesPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-ouro-600/70 mb-1.5 font-medium">Descrição do Prêmio</label>
+              <label className="block text-xs lg:text-sm text-ouro-600/70 mb-1.5 font-medium">Descrição do Prêmio</label>
               <input
-                className="input-bau"
+                className="input-bau lg:py-4 lg:text-lg"
                 value={premio}
                 onChange={(e) => setPremio(e.target.value)}
                 placeholder="Ex: Grande Prêmio, Desconto 50%, Brinde..."
@@ -72,7 +72,7 @@ export default function ConfiguracoesPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-ouro-600/70 mb-1.5 font-medium">
+              <label className="block text-xs lg:text-sm text-ouro-600/70 mb-1.5 font-medium">
                 Vencedores por rodada
               </label>
               <div className="flex items-center gap-3">
@@ -108,19 +108,19 @@ export default function ConfiguracoesPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="card-bau p-5"
+          className="card-bau p-5 lg:p-8"
         >
-          <h2 className="font-bold text-sm text-ouro-400 uppercase tracking-wider mb-4">🔊 Sons e Efeitos</h2>
+          <h2 className="font-bold text-sm lg:text-base text-ouro-400 uppercase tracking-wider mb-4">🔊 Sons e Efeitos</h2>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium text-sm text-creme-100">Sons do Sorteio</div>
-                <div className="text-xs text-ouro-600/50">Fanfarra, embaralhamento, celebração</div>
+                <div className="font-medium text-sm lg:text-base text-creme-100">Sons do Sorteio</div>
+                <div className="text-xs lg:text-sm text-ouro-600/50">Fanfarra, embaralhamento, celebração</div>
               </div>
               <button
                 type="button"
                 onClick={toggleSom}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200"
+                className="flex items-center gap-2 px-4 lg:px-6 py-2 lg:py-3 rounded-xl text-sm lg:text-base font-bold transition-all duration-200"
                 style={{
                   background: somAtivo ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.05)',
                   border: `1px solid ${somAtivo ? 'rgba(255,215,0,0.4)' : 'rgba(255,255,255,0.1)'}`,
@@ -133,13 +133,13 @@ export default function ConfiguracoesPage() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium text-sm text-creme-100">Animações</div>
-                <div className="text-xs text-ouro-600/50">Partículas, confetti, efeitos visuais</div>
+                <div className="font-medium text-sm lg:text-base text-creme-100">Animações</div>
+                <div className="text-xs lg:text-sm text-ouro-600/50">Partículas, confetti, efeitos visuais</div>
               </div>
               <button
                 type="button"
                 onClick={() => atualizar({ animacaoAtiva: !animacaoAtiva })}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200"
+                className="flex items-center gap-2 px-4 lg:px-6 py-2 lg:py-3 rounded-xl text-sm lg:text-base font-bold transition-all duration-200"
                 style={{
                   background: animacaoAtiva ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.05)',
                   border: `1px solid ${animacaoAtiva ? 'rgba(255,215,0,0.4)' : 'rgba(255,255,255,0.1)'}`,
@@ -158,19 +158,19 @@ export default function ConfiguracoesPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="card-bau p-5"
+          className="card-bau p-5 lg:p-8"
         >
-          <h2 className="font-bold text-sm text-ouro-400 uppercase tracking-wider mb-4">📋 Histórico</h2>
+          <h2 className="font-bold text-sm lg:text-base text-ouro-400 uppercase tracking-wider mb-4">📋 Histórico</h2>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium text-sm text-creme-100">Visualização</div>
-                <div className="text-xs text-ouro-600/50">O que mostrar no histórico</div>
+                <div className="font-medium text-sm lg:text-base text-creme-100">Visualização</div>
+                <div className="text-xs lg:text-sm text-ouro-600/50">O que mostrar no histórico</div>
               </div>
               <button
                 type="button"
                 onClick={() => atualizar({ mostrarTodasTentativas: !mostrarTodasTentativas })}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200"
+                className="flex items-center gap-2 px-4 lg:px-6 py-2 lg:py-3 rounded-xl text-sm lg:text-base font-bold transition-all duration-200"
                 style={{
                   background: mostrarTodasTentativas ? 'rgba(255,215,0,0.15)' : 'rgba(34,197,94,0.15)',
                   border: `1px solid ${mostrarTodasTentativas ? 'rgba(255,215,0,0.4)' : 'rgba(34,197,94,0.4)'}`,
@@ -193,7 +193,7 @@ export default function ConfiguracoesPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="card-bau p-5"
+          className="card-bau p-5 lg:p-8"
         >
           <h2 className="font-bold text-sm text-ouro-400 uppercase tracking-wider mb-3">📱 Instalar App (PWA)</h2>
           <p className="text-xs text-ouro-600/60 mb-3">
@@ -211,7 +211,7 @@ export default function ConfiguracoesPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="card-bau p-5"
+          className="card-bau p-5 lg:p-8"
         >
           <h2 className="font-bold text-sm text-ouro-400 uppercase tracking-wider mb-3">ℹ️ Sobre</h2>
           <div className="space-y-1 text-xs text-ouro-700/50">
@@ -229,7 +229,7 @@ export default function ConfiguracoesPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="w-full relative overflow-hidden rounded-xl py-4 font-display font-bold text-lg tracking-wider uppercase text-escuro-900 transition-all duration-300 active:scale-95"
+          className="w-full relative overflow-hidden rounded-xl py-4 lg:py-6 font-display font-bold text-lg lg:text-2xl tracking-wider uppercase text-escuro-900 transition-all duration-300 active:scale-95"
           style={{
             background: salvo
               ? 'linear-gradient(135deg, #4ADE80, #22C55E)'
