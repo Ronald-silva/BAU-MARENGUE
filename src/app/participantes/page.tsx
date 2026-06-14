@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserPlus, Search, Upload, Trash2, Edit3, Check, X, Filter, RefreshCw, Camera } from 'lucide-react';
 import Papa from 'papaparse';
@@ -8,20 +8,17 @@ import { salvarFotoParticipante, obterFotoParticipanteUrl } from '@/lib/imageSto
 import { somTick, somErro } from '@/lib/audio';
 import { useConfigStore } from '@/store/configStore';
 
-function ParticipantCard({
-  participante,
-  onEdit,
-  onDelete,
-}: {
+const ParticipantCard = forwardRef<HTMLDivElement, {
   participante: Participante;
   onEdit: (p: Participante) => void;
   onDelete: (id: string) => void;
-}) {
+}>(function ParticipantCard({ participante, onEdit, onDelete }, ref) {
   const vencedor = participante.status === 'vencedor';
   const tentou = participante.status === 'tentou';
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
@@ -104,7 +101,7 @@ function ParticipantCard({
       </div>
     </motion.div>
   );
-}
+});
 
 export default function ParticipantesPage() {
   const [mounted, setMounted] = useState(false);
